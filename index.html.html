@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1920, initial-scale=1" />
+<title>GCT Solution – Office Display</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;600;700&family=Barlow:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy:   #0b1f3a;
+    --blue:   #0d4fa0;
+    --sky:    #1a8cff;
+    --gold:   #f5a623;
+    --white:  #ffffff;
+    --light:  #e8f2ff;
+    --gray:   #8ba8c8;
+    --slide-dur: 7s;
+  }
+
+  html, body {
+    width: 1920px; height: 1080px;
+    overflow: hidden;
+    background: var(--navy);
+    font-family: 'Barlow', sans-serif;
+    color: var(--white);
+  }
+
+  /* ── SLIDE WRAPPER ── */
+  .slideshow {
+    position: relative;
+    width: 1920px; height: 1080px;
+    overflow: hidden;
+  }
+
+  .slide {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transform: scale(1.04);
+    transition: opacity .9s ease, transform .9s ease;
+    display: flex;
+    pointer-events: none;
+  }
+  .slide.active {
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: all;
+  }
+
+  /* ── DECORATIVE BG SHAPES ── */
+  .bg-shape {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(120px);
+    pointer-events: none;
+  }
+
+  /* ── PROGRESS BAR ── */
+  #progress-bar {
+    position: fixed;
+    bottom: 0; left: 0;
+    height: 6px;
+    background: var(--gold);
+    width: 0%;
+    z-index: 999;
+    transition: width linear;
+  }
+
+  /* ── LOGO BADGE (all slides) ── */
+  .logo-badge {
+    position: absolute;
+    top: 48px; left: 72px;
+    display: flex; align-items: center; gap: 18px;
+    z-index: 10;
+  }
+  .logo-badge .logo-ring {
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    background: var(--gold);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Oswald', sans-serif;
+    font-size: 22px; font-weight: 700;
+    color: var(--navy);
+    letter-spacing: 1px;
+    flex-shrink: 0;
+  }
+  .logo-badge .logo-text {
+    font-family: 'Oswald', sans-serif;
+    font-size: 28px; font-weight: 600;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--white);
+    line-height: 1;
+  }
+  .logo-badge .logo-sub {
+    font-size: 13px; font-weight: 300;
+    letter-spacing: 3px;
+    color: var(--gray);
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  /* ── SLIDE NAV DOTS ── */
+  .dots {
+    position: fixed;
+    bottom: 28px; left: 50%;
+    transform: translateX(-50%);
+    display: flex; gap: 12px;
+    z-index: 999;
+  }
+  .dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.3);
+    transition: background .3s, transform .3s;
+    cursor: pointer;
+  }
+  .dot.active { background: var(--gold); transform: scale(1.4); }
+
+  /* ══════════════════════════════════════
+     SLIDE 1 – HERO / WELCOME
+  ══════════════════════════════════════ */
+  #s1 {
+    background: linear-gradient(135deg, #081629 0%, #0d2d5e 60%, #0d4fa0 100%);
+    align-items: center;
+    justify-content: flex-start;
+    padding: 0 160px;
+  }
+  #s1 .bg-shape.s1a {
+    width: 900px; height: 900px;
+    background: var(--sky);
+    opacity: .08;
+    top: -200px; right: -200px;
+  }
+  #s1 .bg-shape.s1b {
+    width: 500px; height: 500px;
+    background: var(--gold);
+    opacity: .06;
+    bottom: -100px; left: 200px;
+  }
+  #s1 .hero-content { max-width: 900px; position: relative; z-index: 2; }
+  #s1 .eyebrow {
+    font-size: 18px; font-weight: 300;
+    letter-spacing: 8px; text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 28px;
+  }
+  #s1 h1 {
+    font-family: 'Oswald', sans-serif;
+    font-size: 112px; font-weight: 700;
+    line-height: .92;
+    text-transform: uppercase;
+    letter-spacing: -2px;
+    color: var(--white);
+    margin-bottom: 40px;
+  }
+  #s1 h1 span { color: var(--gold); }
+  #s1 .tagline {
+    font-size: 26px; font-weight: 300;
+    line-height: 1.5;
+    color: var(--light);
+    max-width: 720px;
+    border-left: 4px solid var(--gold);
+    padding-left: 28px;
+    margin-bottom: 60px;
+  }
+  #s1 .hero-stats {
+    display: flex; gap: 80px;
+    margin-top: 20px;
+  }
+  #s1 .stat .num {
+    font-family: 'Oswald', sans-serif;
+    font-size: 64px; font-weight: 700;
+    color: var(--gold);
+    line-height: 1;
+  }
+  #s1 .stat .label {
+    font-size: 15px; font-weight: 300;
+    letter-spacing: 3px; text-transform: uppercase;
+    color: var(--gray);
+    margin-top: 6px;
+  }
+  #s1 .side-graphic {
+    position: absolute;
+    right: 0; top: 0; bottom: 0;
+    width: 700px;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1;
+  }
+  #s1 .circle-stack {
+    position: relative;
+    width: 560px; height: 560px;
+  }
+  #s1 .circle-stack div {
+    position: absolute;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,.1);
+  }
+  #s1 .c1 { inset: 0; background: rgba(13,79,160,.4); }
+  #s1 .c2 { inset: 50px; background: rgba(13,79,160,.5); }
+  #s1 .c3 { inset: 110px; background: rgba(26,140,255,.3); }
+  #s1 .c4 {
+    inset: 170px;
+    background: var(--gold);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Oswald', sans-serif;
+    font-size: 38px; font-weight: 700;
+    color: var(--navy);
+    text-align: center;
+    line-height: 1.1;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  #s1 .wbe-banner {
+    position: absolute;
+    bottom: 72px; right: 72px;
+    background: rgba(255,255,255,.07);
+    border: 1px solid rgba(255,255,255,.15);
+    border-radius: 12px;
+    padding: 20px 32px;
+    display: flex; align-items: center; gap: 20px;
+    backdrop-filter: blur(8px);
+    z-index: 10;
+  }
+  #s1 .wbe-banner .wbe-icon {
+    font-size: 32px;
+  }
+  #s1 .wbe-banner .wbe-text {
+    font-size: 15px; font-weight: 300;
+    letter-spacing: 1px;
+    color: var(--light);
+    line-height: 1.4;
+  }
+  #s1 .wbe-banner .wbe-text strong {
+    display: block; font-weight: 600; color: var(--gold);
+    font-size: 14px; letter-spacing: 2px; text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+
+  /* ══════════════════════════════════════
+     SLIDE 2 – SERVICES GRID
+  ══════════════════════════════════════ */
+  #s2 {
+    background: #07111e;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 100px;
+  }
+  #s2 .section-header {
+    text-align: center;
+    margin-bottom: 60px;
+  }
+  #s2 .section-header .eyebrow {
+    font-size: 16px; letter-spacing: 8px; text-transform: uppercase;
+    color: var(--gold); font-weight: 300; margin-bottom: 16px;
+  }
+  #s2 .section-header h2 {
+    font-family: 'Oswald', sans-serif;
+    font-size: 72px; font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: -1px;
+  }
+  #s2 .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 28px;
+    width: 100%;
+    max-width: 1700px;
+  }
+  .svc-card {
+    background: linear-gradient(145deg, rgba(13,79,160,.25), rgba(13,79,160,.08));
+    border: 1px solid rgba(26,140,255,.2);
+    border-radius: 20px;
+    padding: 48px 52px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color .3s;
+  }
+  .svc-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: var(--gold);
+    border-radius: 20px 20px 0 0;
+  }
+  .svc-card .icon {
+    font-size: 52px;
+    margin-bottom: 20px;
+    display: block;
+    line-height: 1;
+  }
+  .svc-card h3 {
+    font-family: 'Oswald', sans-serif;
+    font-size: 34px; font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 14px;
+    color: var(--white);
+  }
+  .svc-card p {
+    font-size: 17px; font-weight: 300;
+    line-height: 1.55;
+    color: var(--gray);
+  }
+  .svc-card .corner {
+    position: absolute;
+    bottom: -20px; right: -20px;
+    width: 100px; height: 100px;
+    border-radius: 50%;
+    background: var(--gold);
+    opacity: .05;
+  }
+
+  /* ══════════════════════════════════════
+     SLIDE 3 – MISSION & VALUES
+  ══════════════════════════════════════ */
+  #s3 {
+    background: linear-gradient(160deg, #0a1c35, #0d4fa0);
+    flex-direction: row;
+    align-items: stretch;
+  }
+  #s3 .left-panel {
+    width: 50%;
+    padding: 120px 100px;
+    display: flex; flex-direction: column; justify-content: center;
+    border-right: 1px solid rgba(255,255,255,.1);
+    position: relative;
+  }
+  #s3 .left-panel .big-quote {
+    font-family: 'Oswald', sans-serif;
+    font-size: 180px; font-weight: 700;
+    color: var(--gold); opacity: .1;
+    line-height: .7;
+    position: absolute;
+    top: 80px; left: 80px;
+    pointer-events: none;
+  }
+  #s3 .left-panel .eyebrow {
+    font-size: 16px; letter-spacing: 8px; text-transform: uppercase;
+    color: var(--gold); font-weight: 300; margin-bottom: 28px;
+  }
+  #s3 .left-panel h2 {
+    font-family: 'Oswald', sans-serif;
+    font-size: 80px; font-weight: 700;
+    line-height: .95; text-transform: uppercase;
+    margin-bottom: 40px;
+  }
+  #s3 .left-panel p {
+    font-size: 22px; font-weight: 300;
+    line-height: 1.7;
+    color: var(--light);
+    max-width: 700px;
+  }
+  #s3 .right-panel {
+    width: 50%;
+    padding: 100px 100px;
+    display: flex; flex-direction: column; justify-content: center;
+    gap: 44px;
+  }
+  .value-row {
+    display: flex; align-items: flex-start; gap: 32px;
+  }
+  .value-row .v-num {
+    font-family: 'Oswald', sans-serif;
+    font-size: 52px; font-weight: 700;
+    color: var(--gold); opacity: .3;
+    line-height: 1; flex-shrink: 0;
+    width: 56px; text-align: right;
+  }
+  .value-row .v-body h4 {
+    font-family: 'Oswald', sans-serif;
+    font-size: 30px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 2px;
+    margin-bottom: 8px; color: var(--white);
+  }
+  .value-row .v-body p {
+    font-size: 18px; font-weight: 300;
+    line-height: 1.5; color: var(--gray);
+  }
+
+  /* ══════════════════════════════════════
+     SLIDE 4 – CATERING & TRANSPORT FOCUS
+  ══════════════════════════════════════ */
+  #s4 {
+    background: #060e1a;
+    flex-direction: row;
+    align-items: stretch;
+  }
+  #s4 .half {
+    width: 50%;
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 100px 90px;
+    position: relative; overflow: hidden;
+  }
+  #s4 .half.left { border-right: 1px solid rgba(255,255,255,.07); }
+  #s4 .half .accent-line {
+    width: 80px; height: 5px;
+    background: var(--gold);
+    border-radius: 3px;
+    margin-bottom: 36px;
+  }
+  #s4 .half .icon-big { font-size: 96px; margin-bottom: 28px; }
+  #s4 .half h2 {
+    font-family: 'Oswald', sans-serif;
+    font-size: 70px; font-weight: 700;
+    text-transform: uppercase;
+    line-height: .95;
+    margin-bottom: 32px;
+    color: var(--white);
+  }
+  #s4 .half p {
+    font-size: 21px; font-weight: 300;
+    line-height: 1.7;
+    color: var(--gray);
+    max-width: 680px;
+    margin-bottom: 40px;
+  }
+  #s4 .bullet-list {
+    display: flex; flex-direction: column; gap: 16px;
+  }
+  #s4 .bullet-list li {
+    display: flex; align-items: center; gap: 16px;
+    font-size: 20px; font-weight: 400;
+    list-style: none;
+    color: var(--light);
+  }
+  #s4 .bullet-list li::before {
+    content: '';
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--gold); flex-shrink: 0;
+  }
+  #s4 .half .bg-num {
+    position: absolute;
+    bottom: -40px; right: -20px;
+    font-family: 'Oswald', sans-serif;
+    font-size: 320px; font-weight: 700;
+    color: white; opacity: .02;
+    line-height: 1;
+    pointer-events: none;
+  }
+
+  /* ══════════════════════════════════════
+     SLIDE 5 – WBE CERTIFICATION & CONTACT
+  ══════════════════════════════════════ */
+  #s5 {
+    background: linear-gradient(135deg, #0b1f3a 0%, #0d3a7a 100%);
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 80px 160px;
+    position: relative;
+    overflow: hidden;
+  }
+  #s5 .bg-shape.s5a {
+    width: 1100px; height: 1100px;
+    background: var(--sky);
+    opacity: .04;
+    top: -300px; left: -300px;
+  }
+  #s5 .bg-shape.s5b {
+    width: 700px; height: 700px;
+    background: var(--gold);
+    opacity: .04;
+    bottom: -200px; right: -200px;
+  }
+  #s5 .cert-badge {
+    display: inline-flex; align-items: center; gap: 24px;
+    background: rgba(245,166,35,.12);
+    border: 2px solid var(--gold);
+    border-radius: 60px;
+    padding: 18px 48px;
+    margin-bottom: 56px;
+  }
+  #s5 .cert-badge span { font-size: 36px; }
+  #s5 .cert-badge p {
+    font-size: 18px; letter-spacing: 4px; text-transform: uppercase;
+    font-weight: 600; color: var(--gold);
+  }
+  #s5 h2 {
+    font-family: 'Oswald', sans-serif;
+    font-size: 96px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: -2px;
+    line-height: .9;
+    margin-bottom: 28px;
+  }
+  #s5 h2 em { font-style: normal; color: var(--gold); }
+  #s5 .sub {
+    font-size: 26px; font-weight: 300;
+    color: var(--light); max-width: 1100px;
+    line-height: 1.6; margin: 0 auto 70px;
+  }
+  #s5 .contact-row {
+    display: flex; gap: 60px; justify-content: center; align-items: stretch;
+  }
+  .contact-card {
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 20px;
+    padding: 44px 64px;
+    display: flex; flex-direction: column; align-items: center; gap: 14px;
+    min-width: 360px;
+  }
+  .contact-card .c-icon { font-size: 40px; }
+  .contact-card .c-label {
+    font-size: 13px; letter-spacing: 4px; text-transform: uppercase;
+    color: var(--gray); font-weight: 400;
+  }
+  .contact-card .c-value {
+    font-family: 'Oswald', sans-serif;
+    font-size: 30px; font-weight: 600;
+    color: var(--white);
+    letter-spacing: 1px;
+  }
+  .contact-card .c-value.gold { color: var(--gold); }
+  #s5 .address-row {
+    margin-top: 50px;
+    font-size: 19px; font-weight: 300;
+    color: var(--gray); letter-spacing: 2px;
+  }
+
+  /* ── SLIDE-IN ANIMATIONS ── */
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(40px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes slideRight {
+    from { opacity: 0; transform: translateX(-40px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50%       { transform: scale(1.03); }
+  }
+
+  .slide.active .animate-up   { animation: slideUp   .7s ease both; }
+  .slide.active .animate-right{ animation: slideRight .7s ease both; }
+  .slide.active .animate-fade { animation: fadeIn    .7s ease both; }
+
+  .d1 { animation-delay: .1s !important; }
+  .d2 { animation-delay: .25s !important; }
+  .d3 { animation-delay: .4s !important; }
+  .d4 { animation-delay: .55s !important; }
+  .d5 { animation-delay: .7s !important; }
+  .d6 { animation-delay: .85s !important; }
+  .d7 { animation-delay: 1s !important; }
+  .d8 { animation-delay: 1.15s !important; }
+
+  .svc-card:nth-child(1) .animate-up { animation-delay: .1s !important; }
+  .svc-card:nth-child(2) .animate-up { animation-delay: .25s !important; }
+  .svc-card:nth-child(3) .animate-up { animation-delay: .4s !important; }
+  .svc-card:nth-child(4) .animate-up { animation-delay: .55s !important; }
+  .svc-card:nth-child(5) .animate-up { animation-delay: .7s !important; }
+  .svc-card:nth-child(6) .animate-up { animation-delay: .85s !important; }
+
+  /* pulsing c4 circle */
+  .active .c4 { animation: pulse 4s ease-in-out infinite; }
+</style>
+</head>
+<body>
+
+<div class="slideshow" id="slideshow">
+
+  <!-- ─── SLIDE 1: HERO ─── -->
+  <div class="slide active" id="s1">
+    <div class="bg-shape s1a"></div>
+    <div class="bg-shape s1b"></div>
+
+    <div class="logo-badge animate-fade d1">
+      <div class="logo-ring">GCT</div>
+      <div>
+        <div class="logo-text">GCT Solution</div>
+        <div class="logo-sub">New York City</div>
+      </div>
+    </div>
+
+    <div class="hero-content">
+      <div class="eyebrow animate-right d2">NYC's Premier Staffing & Support Services</div>
+      <h1 class="animate-up d3">Your <span>Business</span><br>Needs,<br>Met.</h1>
+      <p class="tagline animate-up d4">Exceeding expectations with exceptional service in Transportation, Catering, Operations, Janitorial, Safety Training &amp; more.</p>
+      <div class="hero-stats animate-fade d5">
+        <div class="stat">
+          <div class="num">6+</div>
+          <div class="label">Core Services</div>
+        </div>
+        <div class="stat">
+          <div class="num">WBE</div>
+          <div class="label">Certified Business</div>
+        </div>
+        <div class="stat">
+          <div class="num">NYC</div>
+          <div class="label">Serving the Tri-State</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-graphic animate-fade d4">
+      <div class="circle-stack">
+        <div class="c1"></div>
+        <div class="c2"></div>
+        <div class="c3"></div>
+        <div class="c4">STAFFING<br>SUPPORT<br>SOLUTIONS</div>
+      </div>
+    </div>
+
+    <div class="wbe-banner animate-up d6">
+      <div class="wbe-icon">🏆</div>
+      <div class="wbe-text">
+        <strong>WBE Certified</strong>
+        Women-Owned Business Enterprise<br>Port Authority of New York &amp; New Jersey
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── SLIDE 2: SERVICES ─── -->
+  <div class="slide" id="s2">
+    <div class="logo-badge animate-fade d1">
+      <div class="logo-ring">GCT</div>
+      <div>
+        <div class="logo-text">GCT Solution</div>
+        <div class="logo-sub">Our Services</div>
+      </div>
+    </div>
+
+    <div class="section-header animate-up d1">
+      <div class="eyebrow">What We Do</div>
+      <h2>Our Core Services</h2>
+    </div>
+
+    <div class="grid">
+      <div class="svc-card animate-up d2">
+        <span class="icon">✈️</span>
+        <h3>Catering</h3>
+        <p>In-flight catering (Sky Meals) and employee ground meal services delivered with precision and professionalism.</p>
+        <div class="corner"></div>
+      </div>
+      <div class="svc-card animate-up d3">
+        <span class="icon">⚙️</span>
+        <h3>Operations</h3>
+        <p>Comprehensive scheduling, planning networks, maintenance support, and skilled staffing for your operations.</p>
+        <div class="corner"></div>
+      </div>
+      <div class="svc-card animate-up d4">
+        <span class="icon">🚐</span>
+        <h3>Transportation</h3>
+        <p>Ground transportation of baggage, personnel, passengers, and cargo — reliable, on-time, every time.</p>
+        <div class="corner"></div>
+      </div>
+      <div class="svc-card animate-up d5">
+        <span class="icon">♿</span>
+        <h3>Wheelchair Support</h3>
+        <p>Compassionate assistance for passengers with special mobility needs, ensuring comfort and dignity at every step.</p>
+        <div class="corner"></div>
+      </div>
+      <div class="svc-card animate-up d6">
+        <span class="icon">🧹</span>
+        <h3>Janitorial</h3>
+        <p>Professional cleaning services that keep your facilities clean, comfortable, and on-time to the highest standards.</p>
+        <div class="corner"></div>
+      </div>
+      <div class="svc-card animate-up d7">
+        <span class="icon">🛡️</span>
+        <h3>Safety Training</h3>
+        <p>Expert training programs to keep your team current with compliance requirements, drug testing, and safety protocols.</p>
+        <div class="corner"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── SLIDE 3: MISSION ─── -->
+  <div class="slide" id="s3">
+    <div class="left-panel">
+      <div class="big-quote">"</div>
+      <div class="eyebrow animate-right d1">Our Mission</div>
+      <h2 class="animate-up d2">Service<br>Above<br>All.</h2>
+      <p class="animate-up d3">At GCT Solution, our mission is simple: <strong>exceed your expectations</strong> with exceptional service in every area we operate. We take pride in offering cost-effective solutions without compromising on quality.</p>
+    </div>
+    <div class="right-panel">
+      <div class="value-row animate-right d2">
+        <div class="v-num">01</div>
+        <div class="v-body">
+          <h4>Family-Oriented</h4>
+          <p>A people-centered, women-owned business where you are always our top priority.</p>
+        </div>
+      </div>
+      <div class="value-row animate-right d3">
+        <div class="v-num">02</div>
+        <div class="v-body">
+          <h4>Cost-Effective</h4>
+          <p>Streamlined operations and low overhead deliver competitive pricing that enhances your bottom line.</p>
+        </div>
+      </div>
+      <div class="value-row animate-right d4">
+        <div class="v-num">03</div>
+        <div class="v-body">
+          <h4>Agile & Adaptive</h4>
+          <p>We adapt quickly to changing market demands, turning every challenge into an opportunity for success.</p>
+        </div>
+      </div>
+      <div class="value-row animate-right d5">
+        <div class="v-num">04</div>
+        <div class="v-body">
+          <h4>Quality First</h4>
+          <p>Highest level of professionalism across every service, every shift, every client engagement.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── SLIDE 4: FEATURED SERVICES DEEP DIVE ─── -->
+  <div class="slide" id="s4">
+    <div class="logo-badge animate-fade d1">
+      <div class="logo-ring">GCT</div>
+      <div>
+        <div class="logo-text">GCT Solution</div>
+        <div class="logo-sub">Airport & Business Services</div>
+      </div>
+    </div>
+
+    <div class="half left">
+      <div class="icon-big animate-fade d2">✈️</div>
+      <div class="accent-line animate-fade d2"></div>
+      <h2 class="animate-up d3">Catering &amp;<br>Operations</h2>
+      <p class="animate-up d4">From in-flight sky meals to ground-level employee catering, GCT delivers food service that keeps teams fueled and flights on schedule.</p>
+      <ul class="bullet-list animate-up d5">
+        <li>In-flight Sky Meal preparation &amp; delivery</li>
+        <li>Employee ground meal catering</li>
+        <li>Scheduling &amp; staffing networks</li>
+        <li>Maintenance &amp; planning support</li>
+      </ul>
+      <div class="bg-num">C</div>
+    </div>
+
+    <div class="half right">
+      <div class="icon-big animate-fade d2">🚐</div>
+      <div class="accent-line animate-fade d2"></div>
+      <h2 class="animate-up d3">Transport &amp;<br>Janitorial</h2>
+      <p class="animate-up d4">Reliable ground movement of people, baggage, and cargo — paired with professional cleaning services that keep facilities pristine.</p>
+      <ul class="bullet-list animate-up d5">
+        <li>Ground transportation of baggage &amp; cargo</li>
+        <li>Personnel &amp; passenger shuttle services</li>
+        <li>Aircraft &amp; facility cleaning</li>
+        <li>Wheelchair &amp; special needs assistance</li>
+      </ul>
+      <div class="bg-num">T</div>
+    </div>
+  </div>
+
+  <!-- ─── SLIDE 5: CONTACT / CTA ─── -->
+  <div class="slide" id="s5">
+    <div class="bg-shape s5a"></div>
+    <div class="bg-shape s5b"></div>
+
+    <div class="cert-badge animate-fade d1">
+      <span>🏆</span>
+      <p>WBE Certified — Port Authority of New York &amp; New Jersey</p>
+    </div>
+
+    <h2 class="animate-up d2">Partner<br>With <em>GCT.</em></h2>
+    <p class="sub animate-up d3">Experience service that puts you first. Short-term contracts, long-term partnerships — we stand ready to support your business and airport operations.</p>
+
+    <div class="contact-row animate-up d4">
+      <div class="contact-card">
+        <div class="c-icon">📞</div>
+        <div class="c-label">Call Us</div>
+        <div class="c-value gold">800–240–0701</div>
+      </div>
+      <div class="contact-card">
+        <div class="c-icon">✉️</div>
+        <div class="c-label">Email Us</div>
+        <div class="c-value">Info@GCTSolution.com</div>
+      </div>
+      <div class="contact-card">
+        <div class="c-icon">🌐</div>
+        <div class="c-label">Visit Online</div>
+        <div class="c-value">www.GCTSolution.com</div>
+      </div>
+    </div>
+
+    <div class="address-row animate-fade d5">
+      📍 &nbsp; 230-59 Rockaway Blvd., Suite 270 &nbsp;·&nbsp; Jamaica, NY 11413
+    </div>
+  </div>
+
+</div><!-- /slideshow -->
+
+<div id="progress-bar"></div>
+
+<div class="dots" id="dots">
+  <div class="dot active" onclick="goTo(0)"></div>
+  <div class="dot" onclick="goTo(1)"></div>
+  <div class="dot" onclick="goTo(2)"></div>
+  <div class="dot" onclick="goTo(3)"></div>
+  <div class="dot" onclick="goTo(4)"></div>
+</div>
+
+<script>
+  const slides   = document.querySelectorAll('.slide');
+  const dots     = document.querySelectorAll('.dot');
+  const bar      = document.getElementById('progress-bar');
+  const DURATION = 8000; // ms per slide
+  let current    = 0;
+  let timer      = null;
+  let startTime  = null;
+  let rafId      = null;
+
+  function goTo(idx) {
+    slides[current].classList.remove('active');
+    dots[current].classList.remove('active');
+    current = (idx + slides.length) % slides.length;
+    slides[current].classList.add('active');
+    dots[current].classList.add('active');
+    startProgress();
+  }
+
+  function next() { goTo(current + 1); }
+
+  function startProgress() {
+    clearInterval(timer);
+    cancelAnimationFrame(rafId);
+    bar.style.transition = 'none';
+    bar.style.width = '0%';
+
+    startTime = performance.now();
+
+    function tick(now) {
+      const elapsed = now - startTime;
+      const pct = Math.min((elapsed / DURATION) * 100, 100);
+      bar.style.transition = 'none';
+      bar.style.width = pct + '%';
+      if (pct < 100) {
+        rafId = requestAnimationFrame(tick);
+      } else {
+        next();
+      }
+    }
+    rafId = requestAnimationFrame(tick);
+  }
+
+  startProgress();
+
+  // Keyboard nav
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === ' ') next();
+    if (e.key === 'ArrowLeft') goTo(current - 1);
+  });
+</script>
+</body>
+</html>
